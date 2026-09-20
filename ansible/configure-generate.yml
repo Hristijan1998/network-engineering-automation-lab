@@ -1,0 +1,35 @@
+---
+- name: Configure FRR routers
+  hosts: routers
+  gather_facts: false
+
+  vars_files:
+    - variables.yml
+
+  tasks:
+
+    - name: Display router configuration
+      ansible.builtin.debug:
+        msg:
+          - "Router: {{ inventory_hostname }}"
+          - "Hostname: {{ routers[inventory_hostname].hostname }}"
+          - "Interface IP: {{ routers[inventory_hostname].eth1_ip }}"
+          - "Loopback IP: {{ routers[inventory_hostname].loopback_ip }}"
+          - "OSPF Router ID: {{ routers[inventory_hostname].router_id }}"
+
+    - name: Generate FRR configuration
+      ansible.builtin.template:
+        src: frr.conf.j2
+        dest: "/tmp/{{ inventory_hostname }}-frr.conf"
+      delegate_to: localhost
+
+    - name: Display generated configuration
+      ansible.builtin.command:
+        cmd: "cat /tmp/{{ inventory_hostname }}-frr.conf"
+      delegate_to: localhost
+      register: generated_config
+      changed_when: false
+
+    - name: Show generated configuration
+      ansible.builtin.debug:
+        msg: "{{ generated_config.stdout }}"

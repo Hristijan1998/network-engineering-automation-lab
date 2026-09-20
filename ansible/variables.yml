@@ -1,0 +1,25 @@
+---
+routers:
+  r1:
+    hostname: r1
+    eth1_ip: 10.0.0.1/30
+    eth2_ip: 10.0.0.9/30
+    loopback_ip: 1.1.1.1/32
+    router_id: 1.1.1.1
+    ospf_cost: 20
+
+  r2:
+    hostname: r2
+    eth1_ip: 10.0.0.2/30
+    eth2_ip: 10.0.0.5/30
+    loopback_ip: 2.2.2.2/32
+    router_id: 2.2.2.2
+    ospf_cost: 20
+
+  r3:
+    hostname: r3
+    eth1_ip: 10.0.0.6/30
+    eth2_ip: 10.0.0.10/30
+    loopback_ip: 3.3.3.3/32
+    router_id: 3.3.3.3
+    ospf_cost: 20

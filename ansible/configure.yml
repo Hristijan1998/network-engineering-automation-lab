@@ -1,0 +1,40 @@
+---
+- name: Generate FRR router configurations
+  hosts: routers
+  gather_facts: false
+
+  vars_files:
+    - variables.yml
+
+  tasks:
+
+    - name: Generate FRR configuration
+      ansible.builtin.template:
+        src: frr.conf.j2
+        dest: "{{ playbook_dir }}/../configs/{{ inventory_hostname }}/frr.conf"
+        mode: "0644"
+      delegate_to: localhost
+      register: frr_config
+
+    - name: Display configuration status
+      ansible.builtin.debug:
+        msg: "Configuration for {{ inventory_hostname }} changed: {{ frr_config.changed }}"
+
+
+- name: Apply network configuration
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+
+    - name: Check if router configuration changed
+      ansible.builtin.debug:
+        msg: "Checking generated router configurations"
+
+    - name: Reconfigure Containerlab
+      ansible.builtin.command:
+        cmd: sudo containerlab deploy --topo {{ playbook_dir }}/../topology.yml --reconfigure
+      when: >
+        hostvars['r1']['frr_config']['changed'] or
+        hostvars['r2']['frr_config']['changed'] or
+        hostvars['r3']['frr_config']['changed']

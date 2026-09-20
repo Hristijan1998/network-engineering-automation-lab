@@ -1,0 +1,49 @@
+---
+- name: Network Device Verification
+  hosts: routers
+  gather_facts: false
+
+  vars_files:
+    - variables.yml
+
+  tasks:
+
+    - name: Check OSPF neighbors
+      ansible.builtin.command:
+        cmd: docker exec {{ container_name }} vtysh -c "show ip ospf neighbor"
+      delegate_to: localhost
+      register: ospf_neighbors
+      changed_when: false
+
+    - name: Display OSPF neighbors
+      ansible.builtin.debug:
+        msg: "{{ ospf_neighbors.stdout }}"
+
+    - name: Check routing table
+      ansible.builtin.command:
+        cmd: docker exec {{ container_name }} vtysh -c "show ip route"
+      delegate_to: localhost
+      register: routing_table
+      changed_when: false
+
+    - name: Display routing table
+      ansible.builtin.debug:
+        msg: "{{ routing_table.stdout }}"
+
+    - name: Test connectivity to all loopbacks
+      ansible.builtin.command:
+        cmd: >
+          docker exec {{ container_name }}
+          ping -c 4 {{ routers[item].loopback_ip | regex_replace('/32$', '') }}
+      delegate_to: localhost
+      loop: "{{ routers.keys() | list }}"
+      register: connectivity_tests
+      changed_when: false
+
+    - name: Display connectivity results
+      ansible.builtin.debug:
+        msg:
+          - "Source router: {{ inventory_hostname }}"
+          - "Target: {{ item.item }}"
+          - "{{ item.stdout }}"
+      loop: "{{ connectivity_tests.results }}"

@@ -1,0 +1,10 @@
+all:
+  children:
+    routers:
+      hosts:
+        r1:
+          container_name: clab-network-engineering-lab-r1
+        r2:
+          container_name: clab-network-engineering-lab-r2
+        r3:
+          container_name: clab-network-engineering-lab-r3

@@ -1,0 +1,53 @@
+---
+- name: Network Device Verification
+  hosts: routers
+  gather_facts: false
+
+  tasks:
+    - name: Check OSPF neighbors
+      ansible.builtin.command:
+        cmd: docker exec {{ container_name }} vtysh -c "show ip ospf neighbor"
+      delegate_to: localhost
+      register: ospf_neighbors
+      changed_when: false
+
+    - name: Display OSPF neighbors
+      ansible.builtin.debug:
+        msg: "{{ ospf_neighbors.stdout }}"
+
+    - name: Check routing table
+      ansible.builtin.command:
+        cmd: docker exec {{ container_name }} vtysh -c "show ip route"
+      delegate_to: localhost
+      register: routing_table
+      changed_when: false
+
+    - name: Display routing table
+      ansible.builtin.debug:
+        msg: "{{ routing_table.stdout }}"
+
+    - name: Test R1 to R2 loopback connectivity
+      ansible.builtin.command:
+        cmd: docker exec clab-network-engineering-lab-r1 ping -c 4 2.2.2.2
+      delegate_to: localhost
+      register: r1_to_r2_ping
+      changed_when: false
+      when: inventory_hostname == "r1"
+
+    - name: Display R1 to R2 connectivity
+      ansible.builtin.debug:
+        msg: "{{ r1_to_r2_ping.stdout }}"
+      when: inventory_hostname == "r1"
+
+    - name: Test R2 to R1 loopback connectivity
+      ansible.builtin.command:
+        cmd: docker exec clab-network-engineering-lab-r2 ping -c 4 1.1.1.1
+      delegate_to: localhost
+      register: r2_to_r1_ping
+      changed_when: false
+      when: inventory_hostname == "r2"
+
+    - name: Display R2 to R1 connectivity
+      ansible.builtin.debug:
+        msg: "{{ r2_to_r1_ping.stdout }}"
+      when: inventory_hostname == "r2"
