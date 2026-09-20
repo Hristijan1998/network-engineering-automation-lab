@@ -1,0 +1,12 @@
+# Containerlab generated files
+clab-network-engineering-lab/
+
+# Backup files
+*.bak
+*.before-r3
+*.before-r3-verification
+*.before-cleanup
+
+# Temporary files
+*.tmp
+*.log
